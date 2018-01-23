@@ -5,12 +5,6 @@ library(mixtools)
 library(plyr)
 
 
-
-#####################
-
-### SEM Algorithm ###
-
-#####################
 compute_d <- function(params_vec){
     return(- 0.5 + sqrt(1/ 4 + length(params_vec))) # p/q-formula to compute dimension
     
@@ -44,7 +38,7 @@ compute_r_ij <- function(X, param_df, i, j, tol) {
   # Compute rate until convergence
   t <- 1
   
-  repeat { # In while schleife umbauen mit abbruchs variable (siehe EM function)
+  repeat { # TODO: In while schleife umbauen mit abbruchs variable (siehe EM function)
       
     # Get current state of theta from em computation
     theta_t <- unlist(param[t, ])
