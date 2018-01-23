@@ -2,6 +2,8 @@
 
 library(MASS)
 
+# variables for simulation
+# Todo simulations function von JM einfügen
 V_true = matrix(c(1, 0.3, 0.3, 2), ncol = 2)
 mu_true = c(1,2)
                 
@@ -10,35 +12,26 @@ full_X = mvrnorm(100, mu = mu_true, Sigma = V_true)
 X = full_X
 X[1:20, 2] = NA
 
-
-
 # EM function for multivariate normal data 
 
 norm_em <- function (X, iters, debug=0)
 {
-    if (any(rowSums(is.na(X))>1))
-        stop("This function can handle at most one missing value per case")
+    #if (any(rowSums(is.na(X))>1))
+     #   stop("This function can handle at most one missing value per case")
     
     n <- nrow(X)
     p <- ncol(X)
     
-    # Find initial estimates, using simple averages with missing observations
-    # omitted.  The initial covariance estimate is diagonal.
+    # For the initial estimates we use sample means / covariances excluding the cases with missing
     
     mu <- colMeans(X,na.rm=TRUE)
-    sigma <- diag(apply(X,2,var,na.rm=TRUE))
-    
-    if (debug>0) {
-        cat("\nINITIAL VALUES\n\n")
-        if (debug>1) { cat("X:\n"); print(X) }
-        cat("mu:   ",round(mu,3),"\n")
-        cat("sigma:\n")
-        print(round(sigma,3))
-    }
-    
+    variance <- diag(apply(X,2,var,na.rm=TRUE)) # compute variances with all non-na values
+    sigma <- var(X, na.rm = TRUE) # compute covariance matrix with complete cases
+    diag(sigma) = diag(variance) # use the variances that are computed with all non-na values
+
     # Update the parameter estimates with iterations of the EM algorithm.
     
-    for (t in 1:iters) {
+    for (t in 1:iters) { # TODO: implement stopping criterium
         
         # E Step:
         #
@@ -47,18 +40,16 @@ norm_em <- function (X, iters, debug=0)
         # along with the total extra variance due to uncertainty in the
         # missing values.
         
-        filled_in_X <- X
-        extra_var <- numeric(p)
         for (i in 1:n) {
+        X_imputed <- X
+        var_adjustment <- numeric(p) # empty vector of dimension 1xp
             x <- X[i,]
             na <- is.na(x)
             if (any(na)) {
-                sigma_inv <- solve(sigma[!na,!na])
-                cov_vec <- sigma[na,!na]
-                filled_in_X[i,na] <- 
-                    mu[na] + cov_vec %*% sigma_inv %*% (x[!na] - mu[!na])
-                extra_var[na] <- extra_var[na] + 
-                    sigma[na,na] - cov_vec %*% sigma_inv %*% cov_vec
+                sigma_inv <- solve(sigma[!na,!na]) # take column that does not contain missings and invert variance
+                cov_vec <- sigma[na,!na] # get covariance
+                X_imputed[i,na] <- mu[na] + cov_vec %*% sigma_inv %*% (x[!na] - mu[!na])
+                var_adjustment[na] <- var_adjustment[na] + sigma[na,na] - cov_vec %*% sigma_inv %*% cov_vec
             }
         }
         
@@ -67,18 +58,9 @@ norm_em <- function (X, iters, debug=0)
         # Find new parameter estimates from the filled in version of X, by
         # taking simple averages over the filled in data.
         
-        mu <- colMeans(filled_in_X)
-        Y <- t(filled_in_X) - mu
-        sigma <- (Y %*% t(Y) + diag(extra_var)) / n
-        
-        if (debug>0) {
-            cat("\nITERATION",t,"\n\n")
-            if (debug>1) { cat("filled in X:\n"); print(round(filled_in_X,3)) }
-            cat("mu:   ",round(mu,3),"\n")
-            cat("sigma:\n")
-            print(round(sigma,3))
-            cat("\n")
-        }
+        mu <- colMeans(X_imputed)
+        X_imputed_centered <- t(X_imputed) - mu
+        sigma <- (Y %*% t(X_imputed_centered) + diag(var_adjustment)) / (n - 1)
     }
     
     list(mu=mu,sigma=sigma)
