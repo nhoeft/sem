@@ -4,26 +4,28 @@ library(mixtools)
 
 library(plyr)
 
+source("r/em_neu.R")
 
-compute_d <- function(params_vec){
-    return(- 0.5 + sqrt(1/ 4 + length(params_vec))) # p/q-formula to compute dimension
+
+compute_d <- function(param_vec){
+    return(- 0.5 + sqrt(1/ 4 + length(param_vec))) # p/q-formula to compute dimension
     
 }
 
-param_vec_to_list <- function(params_vec){
-    d = compute_d(params_vec)
+param_vec_to_list <- function(param_vec){
+    d = compute_d(param_vec)
     
-    mu = params_vec[1:d]
-    sigma = matrix(params_vec[(d+1):(d^2)], nrow = d , ncol = d )
+    mu = param_vec[1:d]
+    sigma = matrix(param_vec[(d+1):(d^2)], nrow = d , ncol = d )
     
     return(list(mu, sigma))
 }
 
-param_list_to_vec <- function(params_list){
-    return(unlist(params_list))
+param_list_to_vec <- function(param_list){
+    return(unlist(param_list))
 }
 
-p_list = param_vec_to_list(params_vec)
+p_list = param_vec_to_list(param_vec)
 
 p_vec = param_list_to_vec(p_list)
 
@@ -66,7 +68,7 @@ compute_r_ij <- function(X, param_df, i, j, tol) {
   
 }
 
-calculateDM <- function(X, param_df, tol) {
+compute_DM <- function(X, param_df, tol) {
   
   # compute dimension d
   d <- compute_d(unlist(param_df[1, ]))
@@ -82,21 +84,20 @@ calculateDM <- function(X, param_df, tol) {
   return(DM)
 }
 
-sem_algorithm <- function(data, params, tolerance) {
+# Ab hier verstehn wir auch nichts n ------------
+
+sem <- function(data, params, tol) {
   
   n <- length(data[,1])
   
   # params <- result$params
   
   
-  # Get DM* matrix
-  
-  DM <- calculateDM(data, params, tolerance)
+  # compute the DM matrix
+  DM <- compute_DM(data, params, tol)
  
-  
-  # Get covariance matrix of MLE estimate (last step from em algorithm)
-  
-  cov <- tail(params, 1)[[1]]$cov
+  # obtain final cov matrix from em algorithm
+  cov_final <- param_vec_to_list(unlist(param_df[nrow(param_df), ]))[[2]]
   
   # Preparation of c
   

@@ -99,21 +99,7 @@ norm_em <- function (X, max_iters = 1000, epsilon = 0.0001, initial_param_vec = 
 
 
 
-# Testing
 
-cat("\nTrue covariance matrix:\n")
-print(round(sigma_true,3))
-
-
-cat("\nSample covariance of complete data:\n")
-print(round(cov(X_complete),3))
-
-
-cat("\nCovariance estimate from pairwise complete observations:\n")
-print(round(cov(X,use="pairwise.complete.obs"),3))
-
-cat("\nResult of maximum likelihood estimation with EM:\n")
-print(norm_em(X, max_iters = 1000, epsilon = 0.0001)$sigma)
 
 
 
