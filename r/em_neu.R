@@ -15,13 +15,15 @@ X[1:200, 2] = NA
 
 
 # EM function for multivariate normal data 
-norm_em <- function (X, max_iters = 1000, epsilon = 0.0001, initial_param_vec = NULL)
-{
-    #if (any(rowSums(is.na(X))>1))
-     #   stop("This function can handle at most one missing value per case")
+norm_em <- function (X, max_iters = 1000, epsilon = 0.0001, initial_param_vec = NULL){
+    
+    # intitial_param_vec = c(mu1, mu2, sig1, sig2, rho)
     
     # prepare df to capture parameter estimates at each step
-    param_df <- as.data.frame(matrix(initial_param_vec, nrow = 1))
+    param_df <- as.data.frame(matrix(1:6, nrow = 1))
+
+    
+    #contaminated = apply(X, 2, anyNA)
     
     # initialize stopping variable and iteration counter
     continue_iterating = TRUE
@@ -37,13 +39,17 @@ norm_em <- function (X, max_iters = 1000, epsilon = 0.0001, initial_param_vec = 
         mu <- colMeans(X,na.rm=TRUE)
         variance <- diag(apply(X,2,var,na.rm=TRUE)) # compute variances with all non-na values
         sigma <- var(X, na.rm = TRUE) # compute covariance matrix with complete cases
-        diag(sigma) = diag(variance) # use the variances that are computed with all non-na values        
+        diag(sigma) = diag(variance) # use the variances that are computed with all non-na values
+        
+        
     } else{
         
         mu <- param_vec_to_list(initial_param_vec)[[1]]
         sigma <- param_vec_to_list(initial_param_vec)[[2]]
+        
     }
-
+    
+    
 
     # Update the parameter estimates with iterations of the EM algorithm.
     

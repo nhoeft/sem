@@ -6,28 +6,9 @@ library(plyr)
 
 source("r/em_neu.R")
 
+source("r/utils.R")
 
-compute_d <- function(param_vec){
-    return(- 0.5 + sqrt(1/ 4 + length(param_vec))) # p/q-formula to compute dimension
-    
-}
 
-param_vec_to_list <- function(param_vec){
-    d = compute_d(param_vec)
-    
-    mu = param_vec[1:d]
-    sigma = matrix(param_vec[(d+1):(d^2)], nrow = d , ncol = d )
-    
-    return(list(mu, sigma))
-}
-
-param_list_to_vec <- function(param_list){
-    return(unlist(param_list))
-}
-
-p_list = param_vec_to_list(param_vec)
-
-p_vec = param_list_to_vec(p_list)
 
 
 compute_r_ij <- function(X, param_df, i, j, tol) {
@@ -68,70 +49,86 @@ compute_r_ij <- function(X, param_df, i, j, tol) {
   
 }
 
-compute_DM <- function(X, param_df, tol) {
+compute_DM <- function(X, param_df6, tol) {
+    
+    # hard coding: number of params that are affected by contaminated data
+    d = 3
+    
+    # convert param df to version of length 5 (see above for explanation)
+    param_df5 = apply(param_df6, 1, param_6_to_5)
+    
+    param_df5_trans = apply(param_df5, 1, stabilizing_transformation)
+    
+    # select only the params that are affected by contaminated data
+    param_df3 = param_df5_trans[, 3:5]
   
-  # compute dimension d
-  d <- compute_d(unlist(param_df[1, ]))
   
   # Compute r_ij for all i and j
-  DM <- matrix(nrow = d, ncol = d)
+  # set up DM_star
+  DM_star <- matrix(nrow = d, ncol = d)
   for(i in 1:d) {
     for(j in 1:d) {
-      DM[i,j] <- compute_r_ij(X, param_df, i, j, tol)
+      DM_star[i,j] <- compute_r_ij(X, param_df3, i, j, tol)
     }
     
   }
-  return(DM)
+  return(DM_star)
 }
 
-# Ab hier verstehn wir auch nichts n ------------
+# Ab hier verstehn wir es jetzt
 
-sem <- function(data, params, tol) {
+sem <- function(X, param_df6, tol) {
+    
+    param_df5 = apply(param_df6, 1, param_6_to_5)
   
-  n <- length(data[,1])
-  
-  # params <- result$params
-  
+    
+    param_vec5 = param_df5[nrow(param_df5), ]
+
+  n <- length(X[,1])
+  sig1 = sqrt(param_vec5[2])
+  sig2 = sqrt(param_vec5[4])
+  rho = param_vec5[5]
   
   # compute the DM matrix
-  DM <- compute_DM(data, params, tol)
+  DM_star <- compute_DM(X, param_df6, tol)
  
   # obtain final cov matrix from em algorithm
   cov_final <- param_vec_to_list(unlist(param_df[nrow(param_df), ]))[[2]]
+
+  # Compute G11 from the I_oc
+  G11 <- diag(c( n * sig1^(-2) / (1 - rho^2), (n / 4) * (2 - rho^2) (1 / (1 - rho^2)))) 
   
-  # Preparation of c
+  # Compute G22 from the I_oc
+  G21 = martix(c( -n * sig1^(-1) *  sig2^(-1) * rho * (1 / (1 - rho^2)), 0,
+            0, -(n / 4) * rho^2 * (1 / (1 - rho^2)), 
+            0, - 0.5 * n * rho), nrow = 3, ncol = 2, byrow = TRUE)
   
-  c <- -cov[1,2]^6+3*cov[1,1]*cov[2,2]*cov[1,2]^4-3*(cov[1,1]*cov[2,2]*cov[1,2])^2+(cov[1,1]*cov[2,2])^3
+  # Compute G12 from the I_oc
+  G12 = t(G21) 
   
-  # Calculate G1 if I_oc
-  G1_11 <- cov[1,1]
-  G1_12 <- 0
-  G1_22 <- 2*cov[1,1]^2
-  G1 <- (1/n)*matrix(c(G1_11, G1_12, G1_12, G1_22), nrow = 2, ncol = 2)
-  
-  # Calculate G2 if I_oc
-  G2_11 <- cov[1,2]
-  G2_12 <- 0
-  G2_13 <- 0
-  G2_21 <- 0
-  G2_22 <- 2*cov[1,1]*cov[2,2]
-  G2_23 <- 2*det(cov)^2*(cov[1,1]*cov[2,2]*cov[1,2]^2 - cov[1,2]^4)/c
-  G2 <- (1/n)*matrix(c(G2_11, G2_12, G2_13, G2_21, G2_22, G2_23), nrow = 2, ncol = 3, byrow = TRUE)
-  
-  
-  # Calculate G3 of I_oc
-  G3_11 <- cov[2,2]
-  G3_12 <- 0
-  G3_13 <- 0
-  G3_22 <- det(cov)^2*((cov[1,1]*cov[2,2])^2 - cov[1,2]^4)/c
-  G3_23 <- 2*cov[2,2]*cov[1,2]
-  G3_33 <- 2*cov[2,2]^2
-  G3 <- (1/n)*matrix(c(G3_11, G3_12, G3_13, G3_12, G3_22, G3_23, G3_13, G3_23, G3_33), nrow = 3, ncol = 3)
+  # Compute G22 from the I_oc
+  G22 = martix(c( n * sig2^(-2) *  (1 - rho^2)^(-1), 0, 0, 
+                  0, (n / 4) * (2 - rho^2) * (1 - rho^2)^(-1), -0.5 * n * rho, 
+                  0, - 0.5 * n * rho, n *(1 + rho^2)), nrow = 3, ncol = 2, byrow = TRUE)
+
   
   # Compute Delta V*
-  DV <- (G3 - t(G2)%*%solve(G1)%*%G2)%*%DM%*%solve(diag(3)-DM)
+  A = (G22 - G21 %*% solve(G11) %*% G12)
+  DV_22 <- solve(diag(3)- t(DM_star)) %*% t(DV) %*% A
   
-  return(G3 + DV)
+  #setup 5x5 matrix
+  I_oc_inv = matrix(1:25, ncol = 5)
+  
+  I_oc_inv[1:2, 1:2] = G11
+  
+  I_oc_inv[3:5, 1:2] = G21
+  
+  I_oc_inv[1:2, 3:5] = G12
+  
+  I_oc_inv[3:5, 3:5] = G22 + DV_22
+  
+  
+  
 }
 
 simulate_data = function(n, missings = 0.0, mu = c(0, 0), Sigma= matrix(c(1,2,2,1),2,2), seed = 12345)
