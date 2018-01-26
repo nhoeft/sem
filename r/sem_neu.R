@@ -75,7 +75,7 @@ compute_DM <- function(X, param_df6, tol) {
   return(DM_star)
 }
 
-# Ab hier verstehn wir es jetzt
+
 
 sem <- function(X, param_df6, tol) {
     
@@ -131,27 +131,11 @@ sem <- function(X, param_df6, tol) {
   
 }
 
-simulate_data = function(n, missings = 0.0, mu = c(0, 0), Sigma= matrix(c(1,2,2,1),2,2), seed = 12345)
-{
-  set.seed(seed)
-  
-  # Simulate bivariate normaldistibuted data
-  data = mvrnorm(n = n, mu, Sigma, tol = 1e-6, empirical = FALSE, EISPACK = FALSE)
-  
-  # simulating missing data
-  n_miss = round(n * missings)
-  data[1 : n_miss, 2] = NA
-  
-  return(data)
-}
 
 # Test
 
-data = simulate_data(30, 0.3,  mu = c(0, 0), Sigma= matrix(c(1,0,0,1),2,2))
-data_complete = data[complete.cases(data),]
-EM = normalmixEM(data_complete) 
-params = list(mu = EM$mu, cov = matrix(c(EM$sigma[1], EM$lambda[1], EM$lambda[2], EM$sigma[2]),2,2))
-EM$lambda
-EM$sigma
+data = simulate_data(1000, missings = 0.2,  mu = c(1, 2), sigma= matrix(c(1,.5,.5,1),2,2))
+param_df6 = norm_em(data, max_iters = 1000, epsilon = 0.0001, initial_param_vec = NULL)
 
-V <- sem_algorithm(data, params, 10^-4)
+
+V <- sem(data, param_df6, 10^-4)

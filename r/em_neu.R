@@ -2,6 +2,7 @@
 
 library(MASS)
 
+
 # variables for simulation
 # Todo simulations function von JM einfügen
 sigma_true = matrix(c(1, 0.3, 0.3, 2), ncol = 2)
@@ -97,7 +98,7 @@ norm_em <- function (X, max_iters = 1000, epsilon = 0.0001, initial_param_vec = 
         sigma <- sigma_new
         
         # change iter to iter+1 if the initial values (i.e. t = 0) should be stored in the df as well
-        param_df[iter, ] <- param_list_to_vec(mu, sigma)
+        param_df[iter, ] <- param_list_to_vec(list(mu, sigma))
     }
     
     return(param_df)
