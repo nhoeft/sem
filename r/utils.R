@@ -18,6 +18,27 @@ param_6_to_5 = function(param_vec6){
 }
 
 
+
+# convert param vec of length 5 to param vec of length 6 
+param_5_to_6 = function(param_vec5){
+    
+    mu1 = param_vec5[1]
+    mu2 = param_vec5[3]
+    sig1_sq = param_vec5[2]
+    sig2_sq = param_vec5[4]
+    cov = sqrt(sig1_sq)*sqrt(sig2_sq)*param_vec5[5]
+    
+    
+    # adjust order according to contanimated data (see EM Algorithm and extensions book p. 128)
+    param_vec6 = c(mu1, mu2, sig1_sq, cov, cov, sig2_sq)
+    
+    return(param_vec6)
+}
+
+
+
+
+
 # log / fisher transformation of variances and correlation for higher numerical stability
 stabilizing_transformation = function(param_vec5){
     
@@ -27,7 +48,7 @@ stabilizing_transformation = function(param_vec5){
     z = 0.5*log((1+rho) / (1-rho))
     
     # adjust order according to contanimated data (see EM Algorithm and extensions book p. 128)
-    param_vec5_trans = c(mu1, log(sig1_sq), mu2, log(sig2_sq), z)
+    param_vec5_trans = c(param_vec5[1], log(param_vec5[2]), param_vec5[3], log(param_vec5[4]), z)
     
     return(param_vec5_trans)
     

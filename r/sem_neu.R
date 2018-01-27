@@ -1,13 +1,12 @@
 library(MASS)
 
-library(mixtools)
-
-library(plyr)
+rm(list = ls())
 
 source("r/em_neu.R")
 
 source("r/utils.R")
 
+source("r/data_simulation.R")
 
 
 
@@ -24,27 +23,43 @@ compute_r_ij <- function(X, param_df, i, j, tol) {
   repeat { # TODO: In while schleife umbauen mit abbruchs variable (siehe EM function)
       
     # Get current state of theta from em computation
-    theta_t <- unlist(param[t, ])
+    theta_t <- unlist(param_df[t, ])
     
     # Define theta_i as the final theta and replace i-th value with current state at iteration t
-    theta_t_i <- theta_final
-    theta_t_i[i] <- theta_t[i]
+    # to replace the correct parameter, we convert the vector from len 6 to 5 and back again, since em function requires len 6 param vector
+    theta_t_i <- param_6_to_5(theta_final)
+    theta_t_i[i] <- param_6_to_5(theta_t)[i]
+    
+    theta_t_i = param_5_to_6(theta_t_i)
+    
     theta_t1_i_tilde <- norm_em(X, max_iters = 1, initial_param_vec = theta_t_i)
+   
+    
+    theta_t1_i_tilde5 = unlist(param_6_to_5(theta_t1_i_tilde))
+    theta_t1_i_tilde5_trans = stabilizing_transformation(theta_t1_i_tilde5)
+    
+    theta_final5 = unlist(param_6_to_5(theta_final))
+    theta_final5_trans = stabilizing_transformation(theta_final5)
+
+    theta_t5 = unlist(param_6_to_5(theta_t))
+    theta_t5_trans = stabilizing_transformation(theta_t5)
+    
     
     # Calculate ratio
-    r_vec <- append(r_vec, (theta_t1_i[j] - theta_final[j])/(theta_t[i] - theta_final[i]))
+    r_vec <- append(r_vec, (theta_t1_i_tilde5_trans[j] - theta_final5_trans[j])/(theta_t5_trans[i] - theta_final5_trans[i]))
     
     # Increase iteration
     t <- t + 1
     
     # Check if convergence criterion is hit or we're running out of original estimations
     len <- length(r_vec)
-    if((len >= 2 && abs(r_vec[last] - r_vec[len-1]) < tol)) {
+    if((len >= 20 && abs(r_vec[len] - r_vec[len-1]) < tol)) {
       
       break
       
     }
   }
+  print(r_vec)
   return(r_vec[len])
   
 }
@@ -54,25 +69,16 @@ compute_DM <- function(X, param_df6, tol) {
     # hard coding: number of params that are affected by contaminated data
     d = 3
     
-    # convert param df to version of length 5 (see above for explanation)
-    param_df5 = apply(param_df6, 1, param_6_to_5)
-    
-    param_df5_trans = apply(param_df5, 1, stabilizing_transformation)
-    
-    # select only the params that are affected by contaminated data
-    param_df3 = param_df5_trans[, 3:5]
-  
-  
-  # Compute r_ij for all i and j
-  # set up DM_star
-  DM_star <- matrix(nrow = d, ncol = d)
-  for(i in 1:d) {
-    for(j in 1:d) {
-      DM_star[i,j] <- compute_r_ij(X, param_df3, i, j, tol)
+    # Compute r_ij for all i and j
+    # set up DM_star
+    DM_star <- matrix(nrow = d, ncol = d)
+    for(i in 1:d) {
+        for(j in 1:d) {
+            DM_star[i,j] <- compute_r_ij(X, param_df6, i+2, j+2, tol) # +2 to ensure that only contaminated params are used but DM_star indices i, j = 1,2,3 remain
+        }
+        
     }
-    
-  }
-  return(DM_star)
+    return(DM_star)
 }
 
 
@@ -135,7 +141,9 @@ sem <- function(X, param_df6, tol) {
 # Test
 
 data = simulate_data(1000, missings = 0.2,  mu = c(1, 2), sigma= matrix(c(1,.5,.5,1),2,2))
-param_df6 = norm_em(data, max_iters = 1000, epsilon = 0.0001, initial_param_vec = NULL)
+
+epsilon_em = 0.0001
+param_df6 = norm_em(data, max_iters = 1000, epsilon = epsilon_em, initial_param_vec = NULL)
 
 
-V <- sem(data, param_df6, 10^-4)
+V <- sem(data, param_df6, tol = sqrt(epsilon_em))
