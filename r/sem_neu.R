@@ -8,7 +8,7 @@ source("r/utils.R")
 
 source("r/data_simulation.R")
 
-source("r/testdurchlauf.R")
+source("r/dm_matrix_neu.R")
 
 
 compute_r_ij <- function(X, param_df, i, j, tol) {
