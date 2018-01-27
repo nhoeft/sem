@@ -63,10 +63,10 @@ compute_d <- function(param_vec){
 }
 
 param_vec_to_list <- function(param_vec){
-    d = compute_d(param_vec)
+    #d = compute_d(param_vec)
     
-    mu = param_vec[1:d]
-    sigma = matrix(param_vec[(d+1):(d^2)], nrow = d , ncol = d )
+    mu = param_vec[1:2]
+    sigma = matrix(param_vec[3:6], nrow = 2 , ncol = 2)
     
     return(list(mu, sigma))
 }

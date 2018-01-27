@@ -8,6 +8,7 @@ source("r/utils.R")
 
 source("r/data_simulation.R")
 
+source("r/testdurchlauf.R")
 
 
 compute_r_ij <- function(X, param_df, i, j, tol) {
@@ -32,7 +33,7 @@ compute_r_ij <- function(X, param_df, i, j, tol) {
     
     theta_t_i = param_5_to_6(theta_t_i)
     
-    theta_t1_i_tilde <- norm_em(X, max_iters = 1, initial_param_vec = theta_t_i)
+    theta_t1_i_tilde <- unlist(norm_em(X, max_iters = 1, initial_param_vec = theta_t_i))
    
     
     theta_t1_i_tilde5 = unlist(param_6_to_5(theta_t1_i_tilde))
@@ -88,7 +89,7 @@ sem <- function(X, param_df6, tol) {
     param_df5 = apply(param_df6, 1, param_6_to_5)
   
     
-    param_vec5 = param_df5[nrow(param_df5), ]
+    param_vec5 = unlist(param_df5[nrow(param_df5), ])
 
   n <- length(X[,1])
   sig1 = sqrt(param_vec5[2])
@@ -96,16 +97,17 @@ sem <- function(X, param_df6, tol) {
   rho = param_vec5[5]
   
   # compute the DM matrix
-  DM_star <- compute_DM(X, param_df6, tol)
+  DM_star <- compute_DM2(X, param_df6, tol = 0.0001)
  
   # obtain final cov matrix from em algorithm
-  cov_final <- param_vec_to_list(unlist(param_df[nrow(param_df), ]))[[2]]
+  cov_final <- param_vec_to_list(unlist(param_df6[nrow(param_df6), ]))[[2]]
 
   # Compute G11 from the I_oc
-  G11 <- diag(c( n * sig1^(-2) / (1 - rho^2), (n / 4) * (2 - rho^2) (1 / (1 - rho^2)))) 
+  print(c(n * sig1^(-2)/(1 - rho^2), (n/4) * (2 - rho^2)*(1/(1 - rho^2))))
+  G11 <- diag(c( n * sig1^(-2) / (1 - rho^2), (n / 4) * (2 - rho^2)* (1 / (1 - rho^2)))) 
   
   # Compute G22 from the I_oc
-  G21 = martix(c( -n * sig1^(-1) *  sig2^(-1) * rho * (1 / (1 - rho^2)), 0,
+  G21 = matrix(c( -n * sig1^(-1) *  sig2^(-1) * rho * (1 / (1 - rho^2)), 0,
             0, -(n / 4) * rho^2 * (1 / (1 - rho^2)), 
             0, - 0.5 * n * rho), nrow = 3, ncol = 2, byrow = TRUE)
   
@@ -113,14 +115,18 @@ sem <- function(X, param_df6, tol) {
   G12 = t(G21) 
   
   # Compute G22 from the I_oc
-  G22 = martix(c( n * sig2^(-2) *  (1 - rho^2)^(-1), 0, 0, 
+  G22 = matrix(c( n * sig2^(-2) *  (1 - rho^2)^(-1), 0, 0, 
                   0, (n / 4) * (2 - rho^2) * (1 - rho^2)^(-1), -0.5 * n * rho, 
-                  0, - 0.5 * n * rho, n *(1 + rho^2)), nrow = 3, ncol = 2, byrow = TRUE)
+                  0, - 0.5 * n * rho, n *(1 + rho^2)), nrow = 3, ncol = 3, byrow = TRUE)
 
+  print(dim(G11))
+  print(dim(G12))
+  print(dim(G21))
+  print(dim(G22))
   
   # Compute Delta V*
   A = (G22 - G21 %*% solve(G11) %*% G12)
-  DV_22 <- solve(diag(3)- t(DM_star)) %*% t(DV) %*% A
+  DV_22 <- solve(diag(3)- t(DM_star)) %*% t(DM_star) %*% A
   
   #setup 5x5 matrix
   I_oc_inv = matrix(1:25, ncol = 5)
@@ -133,7 +139,7 @@ sem <- function(X, param_df6, tol) {
   
   I_oc_inv[3:5, 3:5] = G22 + DV_22
   
-  
+  return(I_oc_inv)
   
 }
 
@@ -142,7 +148,7 @@ sem <- function(X, param_df6, tol) {
 
 data = simulate_data(1000, missings = 0.2,  mu = c(1, 2), sigma= matrix(c(1,.5,.5,1),2,2))
 
-epsilon_em = 0.0001
+epsilon_em = 0.000000001
 param_df6 = norm_em(data, max_iters = 1000, epsilon = epsilon_em, initial_param_vec = NULL)
 
 
