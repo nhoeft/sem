@@ -11,77 +11,77 @@ source("r/data_simulation.R")
 source("r/dm_matrix_neu.R")
 
 
-compute_r_ij <- function(X, param_df, i, j, tol) {
- 
-  r_vec <- NULL
-  
-  # Get last parameter element
-  theta_final <- unlist(param_df[nrow(param_df), ])# get theta star
-  
-  # Compute rate until convergence
-  t <- 1
-  
-  repeat { # TODO: In while schleife umbauen mit abbruchs variable (siehe EM function)
-      
-    # Get current state of theta from em computation
-    theta_t <- unlist(param_df[t, ])
-    
-    # Define theta_i as the final theta and replace i-th value with current state at iteration t
-    # to replace the correct parameter, we convert the vector from len 6 to 5 and back again, since em function requires len 6 param vector
-    theta_t_i <- param_6_to_5(theta_final)
-    theta_t_i[i] <- param_6_to_5(theta_t)[i]
-    
-    theta_t_i = param_5_to_6(theta_t_i)
-    
-    theta_t1_i_tilde <- unlist(norm_em(X, max_iters = 1, initial_param_vec = theta_t_i))
-   
-    
-    theta_t1_i_tilde5 = unlist(param_6_to_5(theta_t1_i_tilde))
-    theta_t1_i_tilde5_trans = stabilizing_transformation(theta_t1_i_tilde5)
-    
-    theta_final5 = unlist(param_6_to_5(theta_final))
-    theta_final5_trans = stabilizing_transformation(theta_final5)
-
-    theta_t5 = unlist(param_6_to_5(theta_t))
-    theta_t5_trans = stabilizing_transformation(theta_t5)
-    
-    
-    # Calculate ratio
-    r_vec <- append(r_vec, (theta_t1_i_tilde5_trans[j] - theta_final5_trans[j])/(theta_t5_trans[i] - theta_final5_trans[i]))
-    
-    # Increase iteration
-    t <- t + 1
-    
-    # Check if convergence criterion is hit or we're running out of original estimations
-    len <- length(r_vec)
-    if((len >= 20 && abs(r_vec[len] - r_vec[len-1]) < tol)) {
-      
-      break
-      
-    }
-  }
-  print(r_vec)
-  return(r_vec[len])
-  
-}
-
-compute_DM <- function(X, param_df6, tol) {
-    
-    # hard coding: number of params that are affected by contaminated data
-    d = 3
-    
-    # Compute r_ij for all i and j
-    # set up DM_star
-    DM_star <- matrix(nrow = d, ncol = d)
-    for(i in 1:d) {
-        for(j in 1:d) {
-            DM_star[i,j] <- compute_r_ij(X, param_df6, i+2, j+2, tol) # +2 to ensure that only contaminated params are used but DM_star indices i, j = 1,2,3 remain
-        }
-        
-    }
-    return(DM_star)
-}
-
+# compute_r_ij <- function(X, param_df, i, j, tol) {
+#  
+#   r_vec <- NULL
+#   
+#   # Get last parameter element
+#   theta_final <- unlist(param_df[nrow(param_df), ])# get theta star
+#   
+#   # Compute rate until convergence
+#   t <- 1
+#   
+#   repeat { # TODO: In while schleife umbauen mit abbruchs variable (siehe EM function)
+#       
+#     # Get current state of theta from em computation
+#     theta_t <- unlist(param_df[t, ])
+#     
+#     # Define theta_i as the final theta and replace i-th value with current state at iteration t
+#     # to replace the correct parameter, we convert the vector from len 6 to 5 and back again, since em function requires len 6 param vector
+#     theta_t_i <- param_6_to_5(theta_final)
+#     theta_t_i[i] <- param_6_to_5(theta_t)[i]
+#     
+#     theta_t_i = param_5_to_6(theta_t_i)
+#     
+#     theta_t1_i_tilde <- unlist(norm_em(X, max_iters = 1, initial_param_vec = theta_t_i))
+#    
+#     
+#     theta_t1_i_tilde5 = unlist(param_6_to_5(theta_t1_i_tilde))
+#     theta_t1_i_tilde5_trans = stabilizing_transformation(theta_t1_i_tilde5)
+#     
+#     theta_final5 = unlist(param_6_to_5(theta_final))
+#     theta_final5_trans = stabilizing_transformation(theta_final5)
+# 
+#     theta_t5 = unlist(param_6_to_5(theta_t))
+#     theta_t5_trans = stabilizing_transformation(theta_t5)
+#     
+#     
+#     # Calculate ratio
+#     r_vec <- append(r_vec, (theta_t1_i_tilde5_trans[j] - theta_final5_trans[j])/(theta_t5_trans[i] - theta_final5_trans[i]))
+#     
+#     # Increase iteration
+#     t <- t + 1
+#     
+#     # Check if convergence criterion is hit or we're running out of original estimations
+#     len <- length(r_vec)
+#     if((len >= 20 && abs(r_vec[len] - r_vec[len-1]) < tol)) {
+#       
+#       break
+#       
+#     }
+#   }
+#   print(r_vec)
+#   return(r_vec[len])
+#   
+# }
+# 
+# compute_DM <- function(X, param_df6, tol) {
+#     
+#     # hard coding: number of params that are affected by contaminated data
+#     d = 3
+#     
+#     # Compute r_ij for all i and j
+#     # set up DM_star
+#     DM_star <- matrix(nrow = d, ncol = d)
+#     for(i in 1:d) {
+#         for(j in 1:d) {
+#             DM_star[i,j] <- compute_r_ij(X, param_df6, i+2, j+2, tol) # +2 to ensure that only contaminated params are used but DM_star indices i, j = 1,2,3 remain
+#         }
+#         
+#     }
+#     return(DM_star)
+# }
+# 
 
 
 sem <- function(X, param_df6, tol) {
