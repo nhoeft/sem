@@ -1,15 +1,16 @@
 # bootstram
 
-param_variance_boot = function(data, nboots = 1000, epsilon = 0.0001){
+param_variance_boot = function(data, n_boots = 1000, epsilon = 0.0001){
 
     # create empty matrix for bootstrap parameters
-    param_df = matrix(ncol = 5, nrow = n_boots)
+    param_df = as.data.frame(matrix(ncol = 5, nrow = n_boots))
     
     # compute estimates for bootstrap samples
-    for(i in 1:nboots){
-        data_boot = sample(data, nboots, replace = TRUE)
-        param_df[i, ] = estimate_em(data_boot, max_iters = 1000, epsilon = epsilon, initial_param_vec = NULL)
+    for(i in 1:n_boots){
+        data_boot = data[sample(1:nrow(data), nrow(data), replace = TRUE),]
+        param_df[i, ] = unlist(tail(estimate_em(data_boot, max_iters = 1000, epsilon = epsilon, initial_param_vec = NULL), 1))
     }
+    print(param_df)
     
     return(var(param_df))
 }
