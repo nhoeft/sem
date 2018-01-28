@@ -7,17 +7,6 @@
 estimate_em <- function (X, max_iters = 1000, epsilon = 0.0001, initial_param_vec = NULL){
     
     
-    mu1 = initial_param_vec[1]
-    mu2 = initial_param_vec[3]
-    sig1_sq = initial_param_vec[2]
-    sig2_sq = initial_param_vec[4]
-    cov = sqrt(sig1_sq)*sqrt(sig2_sq)*initial_param_vec[5]
-    
-    
-    # here we convert the parameter vector s.t. it has 6 elements, i.e. we replace
-    # the correlation coefficient rho by the covariance (twice)
-    initial_param_vec = c(mu1, mu2, sig1_sq, cov, cov, sig2_sq)
-    
     # prepare df to capture parameter estimates at each step
     param_df <- as.data.frame(matrix(1:5, nrow = 1))
     
@@ -39,6 +28,17 @@ estimate_em <- function (X, max_iters = 1000, epsilon = 0.0001, initial_param_ve
         
         
     } else{
+        
+        # extract values from starting parameter vector
+        mu1 = initial_param_vec[1]
+        mu2 = initial_param_vec[3]
+        sig1_sq = initial_param_vec[2]
+        sig2_sq = initial_param_vec[4]
+        cov = sqrt(sig1_sq)*sqrt(sig2_sq)*initial_param_vec[5]
+        
+        # here we convert the parameter vector s.t. it has 6 elements, i.e. we replace
+        # the correlation coefficient rho by the covariance (twice)
+        initial_param_vec = c(mu1, mu2, sig1_sq, cov, cov, sig2_sq)
         
         # convert parameter vector into a mean vector and a covariance matrix
         mu <- param_vec_to_list(initial_param_vec)[[1]]
@@ -107,8 +107,8 @@ estimate_em <- function (X, max_iters = 1000, epsilon = 0.0001, initial_param_ve
         # compute components for the parameter vector in the above mentioned form:
         # (mu1, sig1_squared, mu2, sigma2_squared, rho)
 
-        mu1 = mu_new[1]
-        mu2 = mu_new[3]
+        mu1 = mu[1]
+        mu2 = mu[2]
         sig1_sq = sigma[1, 1]
         sig2_sq = sigma[2, 2]
         rho = sigma[1, 2] / (sqrt(sig1_sq) * sqrt(sig2_sq))
@@ -120,6 +120,7 @@ estimate_em <- function (X, max_iters = 1000, epsilon = 0.0001, initial_param_ve
     return(param_df)
 }
 
+estimate_em(X)
 
 
 
