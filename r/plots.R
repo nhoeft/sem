@@ -38,3 +38,5 @@ heatmap_custom = function(C, param_names = NULL, title = NULL, legend_title = NU
 m = matrix(rnorm(9), ncol = 3)
 
 heatmap_custom(m, c("Mu", "Sigma11", "Sigma12"), title = "Plot Title")
+
+heatmap_custom(V)

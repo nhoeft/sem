@@ -86,10 +86,10 @@ source("r/dm_matrix_neu.R")
 
 sem <- function(X, param_df6, tol) {
     
-    param_df5 = apply(param_df6, 1, param_6_to_5)
+    #param_df5 = apply(param_df6, 1, param_6_to_5)
   
     
-    param_vec5 = unlist(param_df5[nrow(param_df5), ])
+    param_vec5 = param_6_to_5(unlist(param_df6[nrow(param_df6), ]))
 
   n <- length(X[,1])
   sig1 = sqrt(param_vec5[2])
@@ -100,10 +100,10 @@ sem <- function(X, param_df6, tol) {
   DM_star <- compute_DM2(X, param_df6, tol = 0.0001)
  
   # obtain final cov matrix from em algorithm
-  cov_final <- param_vec_to_list(unlist(param_df6[nrow(param_df6), ]))[[2]]
+  #cov_final <- param_vec_to_list(unlist(param_df6[nrow(param_df6), ]))[[2]]
 
   # Compute G11 from the I_oc
-  print(c(n * sig1^(-2)/(1 - rho^2), (n/4) * (2 - rho^2)*(1/(1 - rho^2))))
+  #print(c(n * sig1^(-2)/(1 - rho^2), (n/4) * (2 - rho^2)*(1/(1 - rho^2))))
   G11 <- diag(c( n * sig1^(-2) / (1 - rho^2), (n / 4) * (2 - rho^2)* (1 / (1 - rho^2)))) 
   
   # Compute G22 from the I_oc
@@ -119,37 +119,45 @@ sem <- function(X, param_df6, tol) {
                   0, (n / 4) * (2 - rho^2) * (1 - rho^2)^(-1), -0.5 * n * rho, 
                   0, - 0.5 * n * rho, n *(1 + rho^2)), nrow = 3, ncol = 3, byrow = TRUE)
 
-  print(dim(G11))
-  print(dim(G12))
-  print(dim(G21))
-  print(dim(G22))
+
   
   # Compute Delta V*
   A = (G22 - G21 %*% solve(G11) %*% G12)
   DV_22 <- solve(diag(3)- t(DM_star)) %*% t(DM_star) %*% A
+  #DV_22 <- (G22 - t(G12)%*%solve(G11)%*%G12)%*%DM_star%*%solve(diag(3)-DM_star)
   
   #setup 5x5 matrix
-  I_oc_inv = matrix(1:25, ncol = 5)
+  I_oc = matrix(1:25, ncol = 5)
+  delta_V = matrix(rep(0, times = 25), ncol = 5)
+  delta_V[3:5, 3:5] = DV_22
   
-  I_oc_inv[1:2, 1:2] = G11
+  I_oc[1:2, 1:2] = G11
   
-  I_oc_inv[3:5, 1:2] = G21
+  I_oc[3:5, 1:2] = G21
   
-  I_oc_inv[1:2, 3:5] = G12
+  I_oc[1:2, 3:5] = G12
   
-  I_oc_inv[3:5, 3:5] = G22 + DV_22
+  I_oc[3:5, 3:5] = G22
   
-  return(I_oc_inv)
+  I_oc_inv = solve(I_oc)
+  
+  I_inv_final = I_oc_inv + delta_V
+  
+  return(I_inv_final)
   
 }
 
 
 # Test
 
-data = simulate_data(1000, missings = 0.2,  mu = c(1, 2), sigma= matrix(c(1,.5,.5,1),2,2))
+data = simulate_data(18, missings = 0.4,  mu = c(1, 2), sigma= matrix(c(1,.5,.5,1),2,2))
+
+x <- c(8,6,11,22,14,17,18,24,19,23,26,40,4,4,5,6,8,10)
+y <- c(59,58,56,53,50,45,43,42,39,38,30,27,NA,NA,NA,NA,NA,NA)
+data2 = as.matrix(data.frame(x = x, y = y))
 
 epsilon_em = 0.000000001
-param_df6 = norm_em(data, max_iters = 1000, epsilon = epsilon_em, initial_param_vec = NULL)
+param_df6 = norm_em(data2, max_iters = 1000, epsilon = epsilon_em, initial_param_vec = NULL)
 
 
-V <- sem(data, param_df6, tol = sqrt(epsilon_em))
+V <- sem(data2, param_df6, tol = sqrt(epsilon_em))

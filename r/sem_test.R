@@ -1,6 +1,6 @@
 library(MASS)
 
-rm(list = ls())
+#rm(list = ls())
 
 source("r/em_neu.R")
 
@@ -270,4 +270,14 @@ for (p in p_frac){
     #V_c[[p]] <- list(V_c_helper[[n]])
     #diff[[p]] <- list(diff_helper[[n]])
 }
+
+
+data = simulate_data(100, missings = 0.2,  mu = c(1, 1), sigma= matrix(c(1,.5,.5,1),2,2))
+#run EM
+epsilon_em = 0.000000001
+param_df6 = norm_em(data, max_iters = 1000, epsilon = epsilon_em, initial_param_vec = NULL)
+#run SEM
+V <- sem(data, param_df6, tol = sqrt(epsilon_em))
+
+
 
