@@ -150,14 +150,14 @@ sem <- function(X, param_df6, tol) {
 
 # Test
 
-data = simulate_data(18, missings = 0.4,  mu = c(1, 2), sigma= matrix(c(1,.5,.5,1),2,2))
+data = simulate_data(50, missings = 0.4,  mu = c(10, 40), sigma= matrix(c(10, 7, 7,23),2,2))
 
-x <- c(8,6,11,22,14,17,18,24,19,23,26,40,4,4,5,6,8,10)
-y <- c(59,58,56,53,50,45,43,42,39,38,30,27,NA,NA,NA,NA,NA,NA)
-data2 = as.matrix(data.frame(x = x, y = y))
+#x <- c(8,6,11,22,14,17,18,24,19,23,26,40,4,4,5,6,8,10)
+#y <- c(59,58,56,53,50,45,43,42,39,38,30,27,NA,NA,NA,NA,NA,NA)
+#data2 = as.matrix(data.frame(x = x, y = y))
 
 epsilon_em = 0.000000001
-param_df6 = norm_em(data2, max_iters = 1000, epsilon = epsilon_em, initial_param_vec = NULL)
+param_df6 = norm_em(data, max_iters = 1000, epsilon = epsilon_em, initial_param_vec = NULL)
 
 
-V <- sem(data2, param_df6, tol = sqrt(epsilon_em))
+V <- sem(data, param_df6, tol = sqrt(epsilon_em))
