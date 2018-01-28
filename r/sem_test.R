@@ -191,24 +191,83 @@ sem <- function(X, param_df6, tol) {
 
 
 # Test
-#with data from paper
-x <- c(8,6,11,22,14,17,18,24,19,23,26,40,4,4,5,6,8,10)
-y <- c(59,58,56,53,50,45,43,42,39,38,30,27,NA,NA,NA,NA,NA,NA)
-data = matrix(c(x,y), ncol = 2)
+#with data from paper (doesnt work)
+#x <- c(8,6,11,22,14,17,18,24,19,23,26,40,4,4,5,6,8,10)
+#y <- c(59,58,56,53,50,45,43,42,39,38,30,27,NA,NA,NA,NA,NA,NA)
+#data = matrix(c(x,y), ncol = 2)
 
-epsilon_em = 0.000000001
-param_df6 = norm_em(data, max_iters = 1000, epsilon = epsilon_em, initial_param_vec = NULL)
+#epsilon_em = 0.000000001
+#param_df6 = norm_em(data, max_iters = 1000, epsilon = epsilon_em, initial_param_vec = NULL)
 
-
-V <- sem(data, param_df6, tol = sqrt(epsilon_em))
-
-# Test
-#with simulated data
-data = simulate_data(100, missings = 0.4,  mu = c(1, 2), sigma= matrix(c(1,.5,.5,1),2,2))
-
-epsilon_em = 0.000000001
-param_df6 = norm_em(data, max_iters = 1000, epsilon = epsilon_em, initial_param_vec = NULL)
+#V <- sem(data, param_df6, tol = sqrt(epsilon_em))
 
 
-V <- sem(data, param_df6, tol = sqrt(epsilon_em))
+#Simulate data for different number of observations and different fraction of NAs
+#Then calculate complete data VCOV and take difference
+n_obs = c(20, 50, 100)
+p_frac = c(0.1, 0.25, 0.45)
+
+#generate empty lists to store the results in
+V_c <- list()
+diff <- list()
+
+
+for (p in p_frac){
+    for(n in n_obs){
+        #empty lists to store results for each p in
+        V_c_helper <- list()
+        diff_helper <- list()
+        #simulate data
+        data = simulate_data(n, missings = p,  mu = c(1, 1), sigma= matrix(c(1,.5,.5,1),2,2))
+        #run EM
+        epsilon_em = 0.000000001
+        param_df6 = norm_em(data, max_iters = 1000, epsilon = epsilon_em, initial_param_vec = NULL)
+        #run SEM
+        V <- sem(data, param_df6, tol = sqrt(epsilon_em))
+
+        ###Calculating the complete-data variance covariance matrix 
+        data_c <- data[!is.na(data[,2]), ]
+        cov_c <- cov(data_c)
+
+        n_data <- length(data_c[,1])
+
+        # Preparation of c
+        c <- -cov_c[1,2]^6+3*cov_c[1,1]*cov_c[2,2]*cov_c[1,2]^4-3*(cov_c[1,1]*cov_c[2,2]*cov_c[1,2])^2+(cov_c[1,1]*cov_c[2,2])^3
+
+        # Calculate G1 of I_o^-1
+        G1_11 <- cov_c[1,1]
+        G1_12 <- 0
+        G1_22 <- 2*cov_c[1,1]^2
+        G1 <- (1/n_data)*matrix(c(G1_11, G1_12, G1_12, G1_22), nrow = 2, ncol = 2)
+
+        # Calculate G2 of I_o^-1
+        G2_11 <- cov_c[1,2]
+        G2_12 <- 0
+        G2_13 <- 0
+        G2_21 <- 0
+        G2_22 <- 2*cov_c[1,1]*cov_c[2,2]
+        G2_23 <- 2*det(cov_c)^2*(cov_c[1,1]*cov_c[2,2]*cov_c[1,2]^2 - cov_c[1,2]^4)/c
+        G2 <- (1/n_data)*matrix(c(G2_11, G2_12, G2_13, G2_21, G2_22, G2_23),
+                   nrow = 2, ncol = 3, byrow = TRUE)
+
+        # Calculate G3 of I_o^-1
+        G3_11 <- cov_c[2,2]
+        G3_12 <- 0
+        G3_13 <- 0
+        G3_22 <- det(cov_c)^2*((cov_c[1,1]*cov_c[2,2])^2 - cov_c[1,2]^4)/c
+        G3_23 <- 2*cov_c[2,2]*cov_c[1,2]
+        G3_33 <- 2*cov_c[2,2]^2
+        G3 <- (1/n_data)*matrix(c(G3_11, G3_12, G3_13, G3_12, G3_22, G3_23,
+                     G3_13, G3_23, G3_33), nrow = 3, ncol = 3)
+
+        # Complete-data VCOV matrix = Inverse of observed Information matrix I_o
+        V_c_helper[[n]] = matrix(c(G1, G2, t(G2), G3), ncol = 5)
+
+
+        # Calculate difference between V and V_c 
+        diff_helper[[n]] <- V - V_c_helper[[n]]; diff_helper[[n]]
+    }
+    #V_c[[p]] <- list(V_c_helper[[n]])
+    #diff[[p]] <- list(diff_helper[[n]])
+}
 
