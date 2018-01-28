@@ -18,3 +18,4 @@ param_variance_boot = function(data, n_boots = 1000, epsilon = 0.0001){
 
 data = simulate_data(1000, missings = 0.2,  mu = c(1, 2), sigma= matrix(c(1,.5,.5,1),2,2))
 param_variance_boot(data)
+#estimate_em(data, max_iters = 1000, epsilon = epsilon, initial_param_vec = NULL)
