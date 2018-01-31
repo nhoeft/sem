@@ -7,9 +7,9 @@ df = data.frame(cbind(bootstrapped, imputed, true), Names)
 
 # melt the data frame for plotting
 df_m <- melt(df, id.vars='Names')
-
+colnames(df_m) <- c("Names", "procedure", "value")
 # plot everything
 ggplot(df_m, aes(Names, value)) +   
-    geom_point(aes(color = variable, shape = variable), position = "dodge", stat="identity", size = 5) +
+    geom_point(aes(color = procedure, shape = procedure), position = "dodge", stat = "identity", size = 5) +
     labs(x = "parameters", y = "variance") +
-    guides(fill=guide_legend(title="type"), position_dodge(width = 2)) 
+   guides(fill = guide_legend(title="type")) 
