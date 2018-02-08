@@ -100,14 +100,14 @@ sem <- function(X, param_vec, tol) {
     
     I_inv_final = I_oc_inv + delta_V
     
-    return(I_inv_final)
-    
+    #return(I_inv_final)
+    return(I_oc_inv)
 }
 
 
 # Test
 
-data = simulate_data(50, missings = 0.4,  mu = c(1, 4), sigma= matrix(c(4, 3, 3, 5),2,2))
+data = simulate_data(50, missings = 0.4,  mu = c(1, 4), sigma= matrix(c(4, 3, 3, 5),2,2))[[1]]
 
 # x <- c(8,6,11,22,14,17,18,24,19,23,26,40,4,4,5,6,8,10)
 # y <- c(59,58,56,53,50,45,43,42,39,38,30,27,NA,NA,NA,NA,NA,NA)

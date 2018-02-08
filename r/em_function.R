@@ -1,8 +1,5 @@
 ### EM Algorithm for bivariate normal data with missing values ###
 
-
-source("r/utils.R")
-
 # Note: EM function can be used for bivariate normal data with missing in one column
 # initial_param_vec mustbe of the following form: (mu1, sig1_squared, mu2, sigma2_squared, rho)
 
@@ -123,7 +120,7 @@ estimate_em <- function (X, max_iters = 1000, epsilon = 0.0001, initial_param_ve
     return(param_df)
 }
 
-
+estimate_em(X)
 
 
 
