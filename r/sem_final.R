@@ -1,7 +1,5 @@
 # Implementation of the SEM-Algorithm
 
-
-
 # Source funktions needed
 source("r/em_function.R")
 source("r/utils.R")
@@ -11,7 +9,7 @@ source("r/data_simulation.R")
 # Funktion for comuputing the DM matrix
 compute_DM = function(data, theta_final, tol = 0.0001){
     
-    theta_t = theta_final + c(0.2, 0.3, -0.3, 0.2, 0.2) # ???
+    theta_t = theta_final + c(0.2, 0.3, -0.3, 0.2, 0.2) # Start theta near the ML estiamtor
     use_params = c(3,4,5) # indexes of the contaminated parameter
 
     DM = matrix(rep(0, times = 9), nrow = 3, ncol = 3) # initialise matrix for dm values
@@ -55,7 +53,7 @@ sem <- function(X, param_vec, tol) {
     # compute the DM matrix
     DM_star <- compute_DM(data = X, theta_final = param_vec, tol = 0.0001)
 
-    # Cpompute the components of G
+    # Compute the components of G
     
     # Compute G11 from the I_oc
     G11 <- diag(c( n * sig1^(-2) / (1 - rho^2), (n / 4) * (2 - rho^2)* (1 / (1 - rho^2)))) 

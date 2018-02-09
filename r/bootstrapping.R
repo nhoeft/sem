@@ -2,12 +2,10 @@
 
 library(ggplot2)
 library(reshape)
+
 source("r/em_function.R")
-
 source("r/sem_final.R")
-
 source("r/utils.R")
-
 source("r/data_simulation.R")
 
 param_variance_boot = function(data, n_boots = 1000, epsilon = 0.0001){

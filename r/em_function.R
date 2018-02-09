@@ -49,7 +49,6 @@ estimate_em <- function (X, max_iters = 1000, epsilon = 0.0001, initial_param_ve
     
     
     # Update the parameter estimates with iterations of the EM algorithm.
-    
     while (continue_iterating == TRUE){
         
         # E Step:
@@ -120,7 +119,6 @@ estimate_em <- function (X, max_iters = 1000, epsilon = 0.0001, initial_param_ve
     return(param_df)
 }
 
-estimate_em(X)
 
 
 
