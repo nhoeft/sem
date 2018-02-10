@@ -1,8 +1,7 @@
 ##### Function to simulate data #####
-# Generates missing at random pattern (MNAR) in  variable Y1 and Y2
-# n = number of observations, missings = proportion of missing values in variable Y1 and in Y2 each,
+# Generates bivariate normal data with missing not at random pattern (MNAR) in  variable Y2
+# n = number of observations, missings = proportion of missing values in variable Y2,
 # mu = vector of means, sigma = VCOV matrix.
-
 
 
 simulate_data = function(n, missings = 0.0, mu = c(0, 0), sigma= matrix(c(1,2,2,1),2,2), seed = 12345)
@@ -16,7 +15,7 @@ simulate_data = function(n, missings = 0.0, mu = c(0, 0), sigma= matrix(c(1,2,2,
     colnames(data) = c("Y1", "Y2")
     data_without_miss = data
     
-    # Simulating missing data in Y2 (MAR)
+    # Simulating missing data in Y2 (MNAR)
     n_miss_y2 = ceiling(n * missings)
     probabilities = ifelse(data[, "Y2"] < mu[2], 0, data[, "Y2"] / max(data[, "Y2"]))
     dropouts = sample(1:length(data[,"Y2"]), size = n_miss_y2, replace = FALSE, prob = probabilities)

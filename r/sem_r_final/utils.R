@@ -1,5 +1,6 @@
 ### utils for sem project ###
 
+# This file contains some helper functions used in the SEM implementation
 
 # convert param vec of length 6 (with covariances) to param vec of length 5 (with correlation instead)
 param_6_to_5 = function(param_vec6){
@@ -56,12 +57,7 @@ stabilizing_transformation = function(param_vec5){
 }
 
 
-
-compute_d = function(param_vec){
-    return(- 0.5 + sqrt(1/ 4 + length(param_vec))) # p/q-formula to compute dimension
-    
-}
-
+# conversion between parameter vector and list consisting of mean vector and var matrix
 param_vec_to_list = function(param_vec){
     #d = compute_d(param_vec)
     
@@ -71,6 +67,7 @@ param_vec_to_list = function(param_vec){
     return(list(mu, sigma))
 }
 
+# see above explanation
 param_list_to_vec = function(param_list){
     return(unlist(param_list))
 }

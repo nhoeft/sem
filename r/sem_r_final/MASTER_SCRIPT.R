@@ -59,6 +59,7 @@ true = diag(param_variance_real(n_runs = 100000, epsilon = 0.0001, n = 100,
 Names=c("mu 1","sigma 1", "mu 2", "sigma 2", "rho" ) 
 df = data.frame(cbind(bootstrapped, biased_em, true), Names)
 
+# reshape the dataframe for plotting
 df_m = melt(df, id.vars='Names')
 colnames(df_m) = c("Names", "procedure", "value")
 
