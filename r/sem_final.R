@@ -1,4 +1,4 @@
-# Implementation of the SEM-Algorithm
+##### Implementation of the SEM-Algorithm #####
 
 # Source funktions needed
 source("r/em_function.R")

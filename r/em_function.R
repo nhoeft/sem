@@ -1,4 +1,4 @@
-### EM Algorithm for bivariate normal data with missing values ###
+##### EM Algorithm for bivariate normal data with missing values #####
 
 # Note: EM function can be used for bivariate normal data with missing in one column
 # initial_param_vec mustbe of the following form: (mu1, sig1_squared, mu2, sigma2_squared, rho)

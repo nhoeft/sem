@@ -1,4 +1,4 @@
-# Function to simulate data.
+##### Function to simulate data #####
 # Generates missing at random pattern (MNAR) in  variable Y1 and Y2
 # n = number of observations, missings = proportion of missing values in variable Y1 and in Y2 each,
 # mu = vector of means, sigma = VCOV matrix.
