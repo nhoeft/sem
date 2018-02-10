@@ -40,7 +40,7 @@ compute_DM = function(data, theta_final, tol = 0.0001){
 }
 
 # Function for computing the parameter Covariances with the SEM-algorithm
-sem <- function(X, param_vec, tol) {
+sem <- function(X, param_vec, tol, return_unadjusted = FALSE) {
     
     # Get n as length of the data
     n <- length(X[,1])
@@ -92,5 +92,10 @@ sem <- function(X, param_vec, tol) {
     
     I_inv_corrected = I_oc_inv + delta_V # correct Informationmatrix with delta_v
     
-    return(I_inv_corrected)
+    # return the adjusted SEM Fisher Info or the unadjusted Fisher Info
+    if(return_unadjusted == TRUE){
+        return(I_oc_inv)
+    }else{
+        return(I_inv_corrected)
+    }
 }

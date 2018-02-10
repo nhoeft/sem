@@ -48,8 +48,11 @@ ggplot(data = params_plot) +
 # Preparation of plot for VCOV matrix
 # Bootstrapped, EM imputed and true VCOV matrix
 bootstrapped = diag(var_boots)
-imputed = c(0.0253268033, 1.5820588304, 0.0546455829, 6.7220143328, 0.0002294807)
-true = c(0.035, 2.120, 0.075, 9.315, 0.0003)
+imputed = sem(data, param_vec, tol = sqrt(epsilon_em), return_unadjusted = TRUE)
+# obtain consistent estimate of real variance by Monte Carlo
+true = param_variance_real(n_runs = 100000, epsilon = 0.0001, n = 100, 
+                           missings = 0.3,  mu = c(12, 52), 
+                           sigma= matrix(c(36,35,35,81),2,2)) 
 
 # Plot of VCOV matrix evaluation
 Names=c("mu 1","sigma 1", "mu 2", "sigma 2", "rho" ) 
