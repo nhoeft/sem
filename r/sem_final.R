@@ -40,10 +40,10 @@ compute_DM = function(data, theta_final, tol = 0.0001){
 }
 
 # Function for computing the parameter Covariances with the SEM-algorithm
-sem <- function(X, param_vec, tol, return_unadjusted = FALSE) {
+sem = function(X, param_vec, tol, return_unadjusted = FALSE) {
     
     # Get n as length of the data
-    n <- length(X[,1])
+    n = length(X[,1])
     
     # Extract parameters from parameter vector
     sig1 = sqrt(param_vec[2])
@@ -51,12 +51,12 @@ sem <- function(X, param_vec, tol, return_unadjusted = FALSE) {
     rho = param_vec[5]
     
     # compute the DM matrix
-    DM_star <- compute_DM(data = X, theta_final = param_vec, tol = 0.0001)
+    DM_star = compute_DM(data = X, theta_final = param_vec, tol = 0.0001)
 
     # Compute the components of G
     
     # Compute G11 from the I_oc
-    G11 <- diag(c( n * sig1^(-2) / (1 - rho^2), (n / 4) * (2 - rho^2)* (1 / (1 - rho^2)))) 
+    G11 = diag(c( n * sig1^(-2) / (1 - rho^2), (n / 4) * (2 - rho^2)* (1 / (1 - rho^2)))) 
     
     # Compute G22 from the I_oc
     G21 = matrix(c( -n * sig1^(-1) *  sig2^(-1) * rho * (1 / (1 - rho^2)), 0,
@@ -73,7 +73,7 @@ sem <- function(X, param_vec, tol, return_unadjusted = FALSE) {
     
     # Compute Delta V*
     A = (G22 - G21 %*% solve(G11) %*% G12)
-    DV_22 <- solve(diag(3)- t(DM_star)) %*% t(DM_star) %*% A
+    DV_22 = solve(diag(3)- t(DM_star)) %*% t(DM_star) %*% A
     
     #setup 5x5 matrix
     I_oc = matrix(1:25, ncol = 5)

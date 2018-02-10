@@ -22,10 +22,11 @@ param_variance_real = function(n_runs = 1000, epsilon = 0.0001, n = 100, missing
     
     # create empty matrix for bootstrap parameters
     param_df = as.data.frame(matrix(ncol = 5, nrow = n_runs))
+    seed = 12345
     
     # compute estimates for bootstrap samples
     for(i in 1:n_runs){
-        data_real = simulate_data(n, missings = missings,  mu = mu, sigma= sigma)[[2]]
+        data_real = simulate_data(n, missings = missings,  mu = mu, sigma= sigma, seed = seed + i)[[2]]
         param_df[i, ] = unlist(tail(estimate_em(data_real, max_iters = 1000, epsilon = epsilon, initial_param_vec = NULL), 1))
     }
     

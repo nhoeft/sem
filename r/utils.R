@@ -57,12 +57,12 @@ stabilizing_transformation = function(param_vec5){
 
 
 
-compute_d <- function(param_vec){
+compute_d = function(param_vec){
     return(- 0.5 + sqrt(1/ 4 + length(param_vec))) # p/q-formula to compute dimension
     
 }
 
-param_vec_to_list <- function(param_vec){
+param_vec_to_list = function(param_vec){
     #d = compute_d(param_vec)
     
     mu = param_vec[1:2]
@@ -71,7 +71,7 @@ param_vec_to_list <- function(param_vec){
     return(list(mu, sigma))
 }
 
-param_list_to_vec <- function(param_list){
+param_list_to_vec = function(param_list){
     return(unlist(param_list))
 }
 
