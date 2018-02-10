@@ -6,7 +6,7 @@ source("r/utils.R")
 source("r/data_simulation.R")
 
 
-# Funktion for comuputing the DM matrix
+# Function for comuputing the DM matrix
 compute_DM = function(data, theta_final, tol = 0.0001){
     
     theta_t = theta_final + c(0.2, 0.3, -0.3, 0.2, 0.2) # Start theta near the ML estiamtor
